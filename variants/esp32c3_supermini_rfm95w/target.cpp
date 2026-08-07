@@ -5,9 +5,9 @@ XiaoC3Board board;
 
 #if defined(P_LORA_SCLK)
   static SPIClass spi;
-  RADIO_CLASS radio = new Module(P_LORA_NSS, P_LORA_DIO_1, P_LORA_RESET, P_LORA_BUSY, spi);
+  RADIO_CLASS radio = new Module(P_LORA_NSS, P_LORA_DIO_0, P_LORA_RESET, P_LORA_DIO_1, spi);
 #else
-  RADIO_CLASS radio = new Module(P_LORA_NSS, P_LORA_DIO_1, P_LORA_RESET, P_LORA_BUSY);
+  RADIO_CLASS radio = new Module(P_LORA_NSS, P_LORA_DIO_0, P_LORA_RESET, P_LORA_DIO_1);
 #endif
 
 WRAPPER_CLASS radio_driver(radio, board);
@@ -15,20 +15,19 @@ WRAPPER_CLASS radio_driver(radio, board);
 ESP32RTCClock fallback_clock;
 AutoDiscoverRTCClock rtc_clock(fallback_clock);
 
-#if ENV_INCLUDE_GPS
-  #include <helpers/sensors/MicroNMEALocationProvider.h>
-  MicroNMEALocationProvider nmea = MicroNMEALocationProvider(Serial1, &rtc_clock);
-  EnvironmentSensorManager sensors = EnvironmentSensorManager(nmea);
-#else
-  EnvironmentSensorManager sensors;
-#endif
+EnvironmentSensorManager sensors;
 
 bool radio_init() {
   fallback_clock.begin();
+
+#if defined(PIN_BOARD_SDA) && defined(PIN_BOARD_SCL)
+  Wire.begin(PIN_BOARD_SDA, PIN_BOARD_SCL);
   rtc_clock.begin(Wire);
+#else
+  rtc_clock.begin(Wire);
+#endif
 
 #if defined(P_LORA_SCLK)
-  spi.begin(P_LORA_SCLK, P_LORA_MISO, P_LORA_MOSI);
   return radio.std_init(&spi);
 #else
   return radio.std_init();
@@ -37,5 +36,5 @@ bool radio_init() {
 
 mesh::LocalIdentity radio_new_identity() {
   RadioNoiseListener rng(radio);
-  return mesh::LocalIdentity(&rng);  // create new random identity
+  return mesh::LocalIdentity(&rng);
 }
