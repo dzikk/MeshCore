@@ -24,15 +24,18 @@ AutoDiscoverRTCClock rtc_clock(fallback_clock);
 #endif
 
 bool radio_init() {
+  Serial.begin(115200);
+  delay(2000);
+
+  Serial.println();
+  Serial.println("=== ESP32C3 SuperMini RFM95W BOOT TEST ===");
+  Serial.println("radio_init() entered");
+  Serial.println("Skipping RFM95W init for boot test");
+
   fallback_clock.begin();
   rtc_clock.begin(Wire);
 
-#if defined(P_LORA_SCLK)
-  spi.begin(P_LORA_SCLK, P_LORA_MISO, P_LORA_MOSI);
-  return radio.std_init(&spi);
-#else
-  return radio.std_init();
-#endif
+  return true;
 }
 
 mesh::LocalIdentity radio_new_identity() {
