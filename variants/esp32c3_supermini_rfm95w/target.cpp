@@ -28,13 +28,40 @@ bool radio_init() {
   delay(2000);
 
   Serial.println();
-  Serial.println("=== ESP32C3 SuperMini RFM95W BOOT TEST ===");
+  Serial.println("=== ESP32C3 SuperMini RFM95W RADIO TEST ===");
   Serial.println("radio_init() entered");
-  Serial.println("Skipping RFM95W init for boot test");
+
+  Serial.println("Pins:");
+  Serial.print("SCLK: "); Serial.println(P_LORA_SCLK);
+  Serial.print("MISO: "); Serial.println(P_LORA_MISO);
+  Serial.print("MOSI: "); Serial.println(P_LORA_MOSI);
+  Serial.print("NSS : "); Serial.println(P_LORA_NSS);
+  Serial.print("RST : "); Serial.println(P_LORA_RESET);
+  Serial.print("DIO0: "); Serial.println(P_LORA_DIO_0);
+  Serial.print("DIO1: "); Serial.println(P_LORA_DIO_1);
 
   fallback_clock.begin();
   rtc_clock.begin(Wire);
 
+#if defined(P_LORA_SCLK)
+  Serial.println("Starting SPI...");
+  spi.begin(P_LORA_SCLK, P_LORA_MISO, P_LORA_MOSI);
+  Serial.println("Calling radio.std_init(&spi)...");
+  bool ok = radio.std_init(&spi);
+#else
+  Serial.println("Calling radio.std_init()...");
+  bool ok = radio.std_init();
+#endif
+
+  Serial.print("radio.std_init result: ");
+  Serial.println(ok ? "OK" : "FAILED");
+
+  if (!ok) {
+    Serial.println("RFM95W init failed. Keeping firmware alive for debug.");
+    return true;
+  }
+
+  Serial.println("RFM95W init OK.");
   return true;
 }
 
