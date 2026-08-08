@@ -3,8 +3,8 @@
 #define RADIOLIB_STATIC_ONLY 1
 
 #include <helpers/radiolib/CustomSX1276Wrapper.h>
-#include <helpers/esp32/ESP32RTCClock.h>
-#include <helpers/esp32/AutoDiscoverRTCClock.h>
+#include <helpers/ESP32RTCClock.h>
+#include <helpers/AutoDiscoverRTCClock.h>
 #include <helpers/sensors/EnvironmentSensorManager.h>
 #include <helpers/BaseChatMesh.h>
 
