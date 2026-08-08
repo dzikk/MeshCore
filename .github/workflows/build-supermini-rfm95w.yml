@@ -1,0 +1,63 @@
+name: Build ESP32-C3 SuperMini RFM95W
+
+on:
+  workflow_dispatch:
+    inputs:
+      firmware:
+        description: "Firmware type"
+        required: true
+        default: "usb"
+        type: choice
+        options:
+          - usb
+          - ble
+          - wifi
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+      - name: Select environment
+        id: env
+        run: |
+          if [ "${{ github.event.inputs.firmware }}" = "usb" ]; then
+            echo "PIO_ENV=ESP32C3_SuperMini_RFM95W_companion_radio_usb" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.firmware }}" = "ble" ]; then
+            echo "PIO_ENV=ESP32C3_SuperMini_RFM95W_companion_radio_ble" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.firmware }}" = "wifi" ]; then
+            echo "PIO_ENV=ESP32C3_SuperMini_RFM95W_companion_radio_wifi" >> $GITHUB_ENV
+          else
+            echo "Unknown firmware type"
+            exit 1
+          fi
+
+      - name: Build firmware
+        run: |
+          pio run -e "$PIO_ENV"
+
+      - name: List build outputs
+        run: |
+          ls -lah ".pio/build/$PIO_ENV"
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PIO_ENV }}
+          path: |
+            .pio/build/${{ env.PIO_ENV }}/*.bin
+            .pio/build/${{ env.PIO_ENV }}/*.elf
+            .pio/build/${{ env.PIO_ENV }}/*.map
