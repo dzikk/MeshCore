@@ -9,7 +9,7 @@ XiaoC3Board board;
  * standalone RegVersion test.
  */
 #if defined(P_LORA_SCLK)
-  static SPIClass spi;
+  static SPIClass spi(FSPI);
   static SPISettings radio_spi_settings(
     100000,       // 100 kHz
     MSBFIRST,
@@ -81,7 +81,7 @@ bool radio_init() {
     P_LORA_MOSI,
     P_LORA_NSS
   );
-
+  Serial.println("Custom SPI bus started");
   Serial.println("Initializing SX1276 at 100 kHz, SPI mode 0...");
   bool success = radio.std_init(&spi);
 #else
