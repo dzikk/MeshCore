@@ -75,7 +75,7 @@ uint8_t ver = sx127x_read_reg(0x42);
 
 Serial.print("SX127x RegVersion = 0x");
 Serial.println(ver, HEX);
-`
+
   
   Serial.println("Calling radio.std_init(&spi)...");
   bool ok = radio.std_init(&spi);
