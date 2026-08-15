@@ -9,7 +9,7 @@ XiaoC3Board board;
  * standalone RegVersion test.
  */
 #if defined(P_LORA_SCLK)
-  static SPIClass spi(FSPI);
+  static SPIClass spi(VSPI);
   static SPISettings radio_spi_settings(
     100000,       // 100 kHz
     MSBFIRST,
