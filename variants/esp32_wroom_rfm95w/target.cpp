@@ -3,6 +3,81 @@
 
 XiaoC3Board board;
 
+#if defined(P_LORA_SCLK)
+  static SPIClass spi(VSPI);
+
+  static SPISettings radio_spi_settings(
+    100000,
+    MSBFIRST,
+    SPI_MODE0
+  );
+
+  RADIO_CLASS radio = new Module(
+    P_LORA_NSS,
+    P_LORA_DIO_0,
+    P_LORA_RESET,
+    P_LORA_DIO_1,
+    spi,
+    radio_spi_settings
+  );
+#else
+  RADIO_CLASS radio = new Module(
+    P_LORA_NSS,
+    P_LORA_DIO_0,
+    P_LORA_RESET,
+    P_LORA_DIO_1
+  );
+#endif
+
+WRAPPER_CLASS radio_driver(radio, board);
+
+ESP32RTCClock fallback_clock;
+AutoDiscoverRTCClock rtc_clock(fallback_clock);
+
+EnvironmentSensorManager sensors;
+
+bool radio_init() {
+  Serial.begin(115200);
+  delay(1500);
+
+  Serial.println();
+  Serial.println("=== ESP32-WROOM RFM95W INIT ===");
+
+  fallback_clock.begin();
+  rtc_clock.begin(Wire);
+
+#if defined(P_LORA_SCLK)
+  Serial.println("Starting VSPI...");
+
+  spi.begin(
+    P_LORA_SCLK,
+    P_LORA_MISO,
+    P_LORA_MOSI,
+    P_LORA_NSS
+  );
+
+  Serial.println("VSPI started");
+  Serial.println("Initializing RFM95W...");
+
+  bool success = radio.std_init(&spi);
+#else
+  bool success = radio.std_init();
+#endif
+
+  Serial.print("RFM95W initialization: ");
+  Serial.println(success ? "SUCCESS" : "FAILED");
+
+  return success;
+}
+
+mesh::LocalIdentity radio_new_identity() {
+  RadioNoiseListener rng(radio);
+  return mesh::LocalIdentity(&rng);
+}#include <Arduino.h>
+#include "target.h"
+
+XiaoC3Board board;
+
 /*
  * The Adafruit RFM95W breakout uses a 74HC4050 input buffer.
  * Start with a conservative SPI clock matching our successful
