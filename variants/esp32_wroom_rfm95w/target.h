@@ -7,9 +7,10 @@
 #include <helpers/radiolib/CustomSX1276Wrapper.h>
 #include <helpers/AutoDiscoverRTCClock.h>
 #include <helpers/sensors/EnvironmentSensorManager.h>
-#include <helpers/esp32/ESP32Board.h>
 
-extern ESP32Board board;
+#include "XiaoC3Board.h"
+
+extern XiaoC3Board board;
 extern WRAPPER_CLASS radio_driver;
 extern AutoDiscoverRTCClock rtc_clock;
 extern EnvironmentSensorManager sensors;
