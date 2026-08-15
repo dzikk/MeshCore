@@ -1,4 +1,4 @@
-name: Build ESP32-C3 SuperMini RFM95W LAB
+name: Build ESP32-WROOM RFM95W
 
 on:
   workflow_dispatch:
@@ -31,31 +31,31 @@ jobs:
           python -m pip install --upgrade pip
           pip install platformio esptool
 
-      - name: Select LAB environment
+      - name: Select ESP32-WROOM environment
         run: |
           if [ "${{ github.event.inputs.firmware }}" = "usb" ]; then
-            echo "PIO_ENV=ESP32C3_SuperMini_RFM95W_LAB_companion_radio_usb" >> "$GITHUB_ENV"
+            echo "PIO_ENV=ESP32_WROOM_RFM95W_companion_radio_usb" >> "$GITHUB_ENV"
           elif [ "${{ github.event.inputs.firmware }}" = "ble" ]; then
-            echo "PIO_ENV=ESP32C3_SuperMini_RFM95W_LAB_companion_radio_ble" >> "$GITHUB_ENV"
+            echo "PIO_ENV=ESP32_WROOM_RFM95W_companion_radio_ble" >> "$GITHUB_ENV"
           elif [ "${{ github.event.inputs.firmware }}" = "wifi" ]; then
-            echo "PIO_ENV=ESP32C3_SuperMini_RFM95W_LAB_companion_radio_wifi" >> "$GITHUB_ENV"
+            echo "PIO_ENV=ESP32_WROOM_RFM95W_companion_radio_wifi" >> "$GITHUB_ENV"
           else
             echo "Unknown firmware type"
             exit 1
           fi
 
-      - name: Build LAB firmware
+      - name: Build ESP32-WROOM firmware
         run: |
           pio run -e "$PIO_ENV"
 
       - name: Create merged firmware
         run: |
-          python -m esptool --chip esp32c3 merge_bin \
+          python -m esptool --chip esp32 merge_bin \
             -o ".pio/build/$PIO_ENV/merged-firmware.bin" \
             --flash_mode dio \
             --flash_freq 40m \
             --flash_size 4MB \
-            0x0 ".pio/build/$PIO_ENV/bootloader.bin" \
+            0x1000 ".pio/build/$PIO_ENV/bootloader.bin" \
             0x8000 ".pio/build/$PIO_ENV/partitions.bin" \
             0x10000 ".pio/build/$PIO_ENV/firmware.bin"
 
@@ -63,7 +63,7 @@ jobs:
         run: |
           ls -lah ".pio/build/$PIO_ENV"
 
-      - name: Upload LAB firmware artifacts
+      - name: Upload ESP32-WROOM firmware artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PIO_ENV }}
